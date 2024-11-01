@@ -41,7 +41,7 @@
 #include "stm32f1xx_hal.h" // This is the HAL Driver Library for the STM32F1 series devices. If yours is from a different type, then you will have to substitute the right one here for your particular STMicroelectronics device. However, if you cant figure out what the name of that header file is, then simply substitute this line of code by: #include "main.h"
 #include <stdint.h> // This library contains the aliases: uint8_t, uint16_t, uint32_t, etc.
 
-/**@brief	MLX90614 TFT LCD Driver Exception codes.
+/**@brief	ILI9341 TFT LCD Driver Exception codes.
  *
  * @details	These Exception Codes are returned by the functions of the @ref ili9341 to indicate the resulting
  *          status of having executed the process contained in each of those functions. For example, to indicate that
@@ -49,11 +49,11 @@
  */
 typedef enum
 {
-    ILI9341_EC_OK      = 0U,	//!< MLX90614 TFT LCD Driver Process was successful.
-    ILI9341_EC_STOP    = 1U,    //!< MLX90614 TFT LCD Driver Process has been stopped.
-    ILI9341_EC_NR      = 2U,	//!< MLX90614 TFT LCD Driver Process has concluded with no response.
-    ILI9341_EC_NA      = 3U,    //!< MLX90614 TFT LCD Driver Data received or to be received Not Applicable.
-    ILI9341_EC_ERR     = 4U     //!< MLX90614 TFT LCD Driver Process has failed.
+    ILI9341_EC_OK      = 0U,	//!< ILI9341 TFT LCD Driver Process was successful.
+    ILI9341_EC_STOP    = 1U,    //!< ILI9341 TFT LCD Driver Process has been stopped.
+    ILI9341_EC_NR      = 2U,	//!< ILI9341 TFT LCD Driver Process has concluded with no response.
+    ILI9341_EC_NA      = 3U,    //!< ILI9341 TFT LCD Driver Data received or to be received Not Applicable.
+    ILI9341_EC_ERR     = 4U     //!< ILI9341 TFT LCD Driver Process has failed.
 } ILI9341_Status;
 
 ILI9341_Status init_ili9341_module(void);
