@@ -56,7 +56,34 @@ typedef enum
     ILI9341_EC_ERR     = 4U     //!< ILI9341 TFT LCD Driver Process has failed.
 } ILI9341_Status;
 
-ILI9341_Status init_ili9341_module(void);
+/**@brief	ILI9341 3.2" TFT LCD Driver GPIO Definition parameters structure.
+ *
+ * @details This contains all the fields required to associate a certain GPIO pin to the Chip Select pin (i.e., The CS
+ *          pin) of the ILI9341 Device Hardware.
+ */
+typedef struct __attribute__ ((__packed__)) {
+    GPIO_TypeDef *GPIO_Port;	//!< Type Definition of the GPIO peripheral port to which this @ref ILI9341_GPIO_def_t structure will be associated with.
+    uint16_t GPIO_Pin;			//!< Pin number of the GPIO peripheral from to this @ref ILI9341_GPIO_def_t structure will be associated with.
+} ILI9341_GPIO_def_t;
+
+/**@brief	ILI9341 3.2" TFT LCD Device's Peripherals Definition parameters structure.
+ *
+ * @details This contains all the fields required to associate the corresponding peripheral pins of our MCU towards
+ *          which the terminals of the ILI9341 Device are connected to.
+ */
+typedef struct __attribute__ ((__packed__)) {
+    ILI9341_GPIO_def_t CS;	     //!< Type Definition of the GPIO peripheral port to which the CS terminal of the ILI9341 device is connected to.
+    ILI9341_GPIO_def_t RESET;    //!< Type Definition of the GPIO peripheral port to which the RESET terminal of the ILI9341 device is connected to.
+    ILI9341_GPIO_def_t DC;       //!< Type Definition of the GPIO peripheral port to which the D/C terminal of the ILI9341 device is connected to.
+} ILI9341_peripherals_def_t;
+
+/**@brief   Eee.
+ *
+ * @param hspi
+ * @param peripherals
+ * @return  Eee.
+ */
+ILI9341_Status init_ili9341_module(SPI_HandleTypeDef *hspi, ILI9341_peripherals_def_t *peripherals);
 
 #endif /* ILI9341_TFT_LCD_DRIVER_H_ */
 
