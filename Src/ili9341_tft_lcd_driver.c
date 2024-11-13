@@ -18,8 +18,10 @@
 #define ILI9341_VCOM_CONTROL_1_DATA_SIZE                    (2)       /**< @brief Size in bytes of the ILI9341 Device's VCOM Control 1 command. */
 #define ILI9341_DISPLAY_FUNCTION_CONTROL_DATA_SIZE          (2)       /**< @brief Size in bytes of the ILI9341 Device's Display Function Control command. */
 
-static SPI_HandleTypeDef *p_hspi;                           /**< @brief Pointer to the SPI Handle Structure of the DMA-SPI that will be used in this @ref ili9341 to write/read data to/from the ILI9341 3.2" TFT LCD Module. @details This pointer's value is defined in the @ref init_ili9341_module function. */
-static ILI9341_peripherals_def_t *p_ili9341_peripherals;    /**< @brief Pointer to the ILI9341 3.2" TFT LCD Device's Peripherals Definition Structure that will be used in this @ref ili9341 to control the Peripherals towards which the terminals of the ILI9341 device are connected to. @details This pointer's value is defined in the @ref init_ili9341_module function. */
+static SPI_HandleTypeDef *p_hspi;                                       /**< @brief Pointer to the SPI Handle Structure of the DMA-SPI that will be used in this @ref ili9341 to write/read data to/from the ILI9341 3.2" TFT LCD Module. @details This pointer's value is defined in the @ref init_ili9341_module function. */
+static ILI9341_peripherals_def_t *p_ili9341_peripherals;                /**< @brief Pointer to the ILI9341 3.2" TFT LCD Device's Peripherals Definition Structure that will be used in this @ref ili9341 to control the Peripherals towards which the terminals of the ILI9341 device are connected to. @details This pointer's value is defined in the @ref init_ili9341_module function. */
+static ILI9341_BPP_t ili9341_bpp_type;                                  /**< @brief ILI9341 Bits Per Pixel (BPP) Type with which the @ref ili9341 will be currently responding whenever processing ILI9341 RGB pixel colors. */
+static ILI9341_Status (*p_ili9341_fill_screen)(ILI9341_COLOR color);    /**< @brief Pointer to the function that fills the screen with a single/plain color with the right Bits Per Pixel (BPP) Color Order. */
 
 /**@brief	ILI9341 3.2" TFT LCD Device's GVDD Level values types definitions.
  *
@@ -354,7 +356,6 @@ static ILI9341_Status ili9341_dma_spi_tx(uint8_t *buffer, uint16_t size);
  */
 static ILI9341_Status HAL_ret_handler(HAL_StatusTypeDef HAL_status);
 
-// TODO: This initialization function has been concluded, but it is still pending to add doxygen documentation to it.
 ILI9341_Status init_ili9341_module(SPI_HandleTypeDef *hspi, ILI9341_peripherals_def_t *peripherals)
 {
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
@@ -417,6 +418,9 @@ ILI9341_Status init_ili9341_module(SPI_HandleTypeDef *hspi, ILI9341_peripherals_
 
     /* Configure the Frame Rate Control. */
     // Default ILI9341 configuration will be left here.
+
+    /* Configure Read Display MADCTL. */
+    // Default ILI9341 configuration will be left here (meaning that MADCTL's B5=0 or, i.e., that the maximum column and row in the frame memory where the ILI9341's MCU can access will be 240 and 320 respectively).
 
     /* Configure the Display Function Control. */
     ret = ili9341_configure_display_function_control();
@@ -487,7 +491,7 @@ static ILI9341_Status ili9341_configure_power_control_1(ILI9341_GVDD_t gvdd_leve
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command_or_data_value:</b> Holds either a Command or a Data that will be sent to the ILI9341 Device via the SPI-DMA peripheral. */
-    uint8_t ili9341_command_or_data_value = ILI9341_SOFTWARE_POWER_CONTROL_1_COMMAND;
+    uint8_t ili9341_command_or_data_value = ILI9341_POWER_CONTROL_1_COMMAND;
 
     set_dc_pin_to_command_mode();
     enable_cs_pin();
@@ -511,7 +515,7 @@ static ILI9341_Status ili9341_configure_vcom_control_1(ILI9341_VCOMH_t vcomh_vol
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command:</b> Holds the ILI9341 Command that will be sent to it via the SPI-DMA peripheral. */
-    uint8_t ili9341_command = ILI9341_SOFTWARE_VCOM_CONTROL_1_COMMAND;
+    uint8_t ili9341_command = ILI9341_VCOM_CONTROL_1_COMMAND;
 
     set_dc_pin_to_command_mode();
     enable_cs_pin();
@@ -536,7 +540,7 @@ static ILI9341_Status ili9341_configure_vcom_control_2(ILI9341_VMF_t vmf_offset)
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command_or_data_value:</b> Holds either a Command or a Data that will be sent to the ILI9341 Device via the SPI-DMA peripheral. */
-    uint8_t ili9341_command_or_data_value = ILI9341_SOFTWARE_VCOM_CONTROL_2_COMMAND;
+    uint8_t ili9341_command_or_data_value = ILI9341_VCOM_CONTROL_2_COMMAND;
 
     set_dc_pin_to_command_mode();
     enable_cs_pin();
@@ -560,7 +564,7 @@ static ILI9341_Status ili9341_configure_memory_access_control(void)
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command:</b> Holds the ILI9341 Command that will be sent to it via the SPI-DMA peripheral. */
-    uint8_t ili9341_command = ILI9341_SOFTWARE_MEMORY_ACCESS_CONTROL_COMMAND;
+    uint8_t ili9341_command = ILI9341_MEMORY_ACCESS_CONTROL_COMMAND;
 
     set_dc_pin_to_command_mode();
     enable_cs_pin();
@@ -588,13 +592,19 @@ static ILI9341_Status ili9341_configure_memory_access_control(void)
     return ret;
 }
 
+// TODO: Pending to give versatility to this function so that it can allow its implementer to choose in between having 16-bits per pixel and 18-bits per pixel in order so that the color Union made in this library makes more sense.
 static ILI9341_Status ili9341_configure_pixel_format(void)
 {
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command:</b> Holds the ILI9341 Command that will be sent to it via the SPI-DMA peripheral. */
-    uint8_t ili9341_command = ILI9341_SOFTWARE_PIXEL_FORMAT_COMMAND;
+    uint8_t ili9341_command = ILI9341_PIXEL_FORMAT_COMMAND;
 
+    /* Update the @ref p_ili9341_fill_screen pointer and update @ref ili9341_bpp_type (for now, this is fixed to 16bpp; switch-case with 18bpp configuration is pending to be made). */
+    p_ili9341_fill_screen = &ili9341_fill_screen_16bpp;
+    ili9341_bpp_type = ILI9341_BPP_16;
+
+    /* Configure the ILI9341 Pixel Format with the desired Bits Per Pixel (BPP). */
     set_dc_pin_to_command_mode();
     enable_cs_pin();
     ret = ili9341_dma_spi_tx(&ili9341_command, ILI9341_COMMAND_SIZE);
@@ -620,7 +630,7 @@ static ILI9341_Status ili9341_configure_display_function_control(void)
     /** <b>Local \c ILI9341_Status variable ret:</b> Holds the Return value of a @ref ILI9341_Status function type. */
     ILI9341_Status ret;
     /** <b>Local \c uint8_t variable ili9341_command:</b> Holds the ILI9341 Command that will be sent to it via the SPI-DMA peripheral. */
-    uint8_t ili9341_command = ILI9341_SOFTWARE_DISPLAY_FUNCTION_CONTROL_COMMAND;
+    uint8_t ili9341_command = ILI9341_DISPLAY_FUNCTION_CONTROL_COMMAND;
 
     set_dc_pin_to_command_mode();
     enable_cs_pin();
@@ -676,6 +686,44 @@ static ILI9341_Status ili9341_turn_display_on(void)
 
     return ret;
 }
+
+// TODO: Pending to pass the following "public" functions to the header file and to document them.
+ILI9341_Status set_ili9341_bpp_type(ILI9341_BPP_t bpp)
+{
+    /* Update the @ref p_ili9341_fill_screen pointer and update @ref ili9341_bpp_type . */
+    switch (bpp)
+    {
+        case ILI9341_BPP_16:
+            p_ili9341_fill_screen = &ili9341_fill_screen_16bpp;
+            break;
+        case ILI9341_BPP_18:
+            p_ili9341_fill_screen = &ili9341_fill_screen_18bpp;
+            break;
+        default:
+            return ILI9341_EC_ERR; // The requested BPP type is not recognized. Therefore, send Error Exception Code.
+    }
+    ili9341_bpp_type = bpp;
+
+    return ILI9341_EC_OK;
+}
+
+ILI9341_Status ili9341_fill_screen(ILI9341_COLOR color)
+{
+    // TODO: Write set_address function here.
+    return (*p_ili9341_fill_screen)(color);
+}
+
+static ILI9341_Status ili9341_fill_screen_18bpp(ILI9341_COLOR color)
+{
+    // Write code here.
+}
+
+static ILI9341_Status ili9341_fill_screen_16bpp(ILI9341_COLOR color)
+{
+    // TODO: Write the function for coloring the bg of the ILI9341 TFT LCD Display.
+}
+
+// ##### LAST TODO UP TO HERE ##### //
 
 static void enable_cs_pin(void)
 {
